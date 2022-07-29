@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+<head lang="en">
+    <meta charset="UTF-8"/>
+    <title>Spatial Laser Take Home Test</title>
+    <link rel="stylesheet" href="/main.css" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+		integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+		crossorigin=""/>
+</head>
+<body>
+	<div id="map"></div>
+    <div id="react"></div>
+
+    <script src="built/bundle.js"></script>
+	<script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+		integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+		crossorigin=""></script>
+	<script src="dfw-data.js"></script>
+	<script>
+		var lat = 33.045352;
+		var lng = -96.781508;
+		var r = 2000; //2km
+		
+		var map = L.map('map').setView([lat, lng], 11);
+	
+		var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		    maxZoom: 19,
+		    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+		}).addTo(map);
+		
+		var popup = L.popup()
+		    .setLatLng([lat, lng])
+		    .setContent(lat+", "+lng)
+		    .openOn(map);
+		
+		var circle = L.circle([lat, lng], {
+		    color: 'red',
+		    fillColor: '#f03',
+		    fillOpacity: 0.5,
+		    radius: r
+		}).addTo(map);
+	
+		L.geoJson(dfwData).addTo(map);
+		
+		function highlightFeature(e) {
+		    var layer = e.target;
+
+		    layer.setStyle({
+		        weight: 5,
+		        color: 'white',
+		        dashArray: '',
+		        fillOpacity: 0.7
+		    });
+
+		    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+		        layer.bringToFront();
+		    }
+		    
+		    info.update(layer.feature.properties);
+		}
+		
+		function resetHighlight(e) {
+		    geojson.resetStyle(e.target);
+		    info.update();
+		}
+		
+		function zoomToFeature(e) {
+		    map.fitBounds(e.target.getBounds());
+		}
+		
+		function onEachFeature(feature, layer) {
+		    layer.on({
+		        mouseover: highlightFeature,
+		        mouseout: resetHighlight,
+		        click: zoomToFeature
+		    });
+		}
+		var geojson;
+		
+		geojson = L.geoJson(dfwData, {
+		    onEachFeature: onEachFeature
+		}).addTo(map);
+		
+		var info = L.control();
+
+		info.onAdd = function (map) {
+		    this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+		    this.update();
+		    return this._div;
+		};
+
+		// method that we will use to update the control based on feature properties passed
+		info.update = function (props) {
+		    this._div.innerHTML = '<h4>Spatial Laser Take Home Test</h4>' +  (props ?
+		        '<b>' + props.key + '</b><br />income: $' + props.income + '<br />population: ' + props.population + ' people'
+		        : 'Hover over an area');
+		};
+
+		info.addTo(map);
+		
+	</script>
+</body>
+</html>
