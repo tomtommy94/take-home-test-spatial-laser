@@ -36,9 +36,12 @@ class DfwList extends React.Component{
 		const dfwDemoes = data.map(dfwView =>
 			<DfwView key={dfwView._links.self.href} dfwView={dfwView}/>
 		);
-		const avgIncome = (data.reduce(
-			(income, dfwView) => income = income + dfwView.income, 0)
-		)/data.length;
+		const totalIncome = data.reduce(
+			(income, dfwView) => income = income + dfwView.income, 0);
+		let avgIncome = 0;
+		if(data.length > 0) {
+			avgIncome = totalIncome / data.length;
+		}
 		const totalPop = data.reduce(
 			(pop, dfwView) => pop = pop + dfwView.population, 0);
 		return (
